@@ -1450,10 +1450,14 @@ local search_paths=()
 
 # 1. 优先当前用户的 .antigravity-server 目录
 search_paths+=("${HOME}/.antigravity-server")
+search_paths+=("${HOME}/.antigravity-ide-server")
 
 # 2. 如果 HOME 不是 /root，也搜索 /root（可能以 sudo 运行）
 if [ "${HOME}" != "/root" ] && [ -d "/root/.antigravity-server" ]; then
 search_paths+=("/root/.antigravity-server")
+fi
+if [ "${HOME}" != "/root" ] && [ -d "/root/.antigravity-ide-server" ]; then
+search_paths+=("/root/.antigravity-ide-server")
 fi
 
 # 3. 扫描 /home 下的其他用户目录（WSL 或多用户环境）
@@ -1465,11 +1469,16 @@ if [ "${user_dir}" != "${HOME}" ]; then
 search_paths+=("${user_dir}/.antigravity-server")
 fi
 fi
+if [ -d "${user_dir}/.antigravity-ide-server" ]; then
+if [ "${user_dir}" != "${HOME}" ]; then
+search_paths+=("${user_dir}/.antigravity-ide-server")
+fi
+fi
 done
 fi
 
 # 4. 用户主目录的其他位置，兜底
-if [ ! -d "${HOME}/.antigravity-server" ]; then
+if [ ! -d "${HOME}/.antigravity-server" ] && [ ! -d "${HOME}/.antigravity-ide-server" ]; then
 search_paths+=("${HOME}")
 fi
 
@@ -1503,7 +1512,7 @@ echo "  - ${base}"
 done
 echo ""
 echo "请手动输入 antigravity 安装目录"
-echo "（通常是 ~/.antigravity-server 或 /home/用户名/.antigravity-server）"
+echo "（通常是 ~/.antigravity-server 或 ~/.antigravity-ide-server 等）"
 read -r -p "目录路径，不输入直接回车则放弃: " base
 if [ -z "${base}" ] || [ ! -d "${base}" ]; then
 error "未找到 Agent 文件，请确认 antigravity 安装路径后重试。"
@@ -1568,7 +1577,7 @@ fi
           echo "  - ${p}"
         done
         echo ""
-        error "请确保 Antigravity 已安装在当前用户目录（${HOME}/.antigravity-server）"
+        error "请确保 Antigravity 已安装在当前用户目录（${HOME}/.antigravity-server 或 ${HOME}/.antigravity-ide-server）"
       fi
 
       # 选择有权限的最新文件
